@@ -151,7 +151,7 @@ class LoginViewController: UIViewController {
         /* 2/3. Build the URL, Configure the request */
         let request = NSURLRequest(url: appDelegate.tmdbURLFromParameters(methodParameters as [String : AnyObject], withPathExtension: "/authentication/token/validate_with_login"))
         /* 4. Make the request */
-        let task = appDelegate.sharedSession.dataTask(with: <#T##URL#>, completionHandler: <#T##(Data?, URLResponse?, Error?) -> Void#>)
+        let task = appDelegate.sharedSession.dataTask(with: request) { (data, response, error) in
             
             func displayError(_ error: String, debugLabelText: String? = nil) {
                 print(error)
