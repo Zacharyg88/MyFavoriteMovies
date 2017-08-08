@@ -229,6 +229,7 @@ class LoginViewController: UIViewController {
             
             self.appDelegate.sessionID = parsedresult[Constants.TMDBParameterKeys.SessionID] as! String?
             print(self.appDelegate.sessionID as Any)
+            self.getUserID(self.appDelegate.sessionID!)
             /* 7. Start the request */
     }
         task.resume()
@@ -239,11 +240,48 @@ class LoginViewController: UIViewController {
         /* TASK: Get the user's ID, then store it (appDelegate.userID) for future use and go to next view! */
         
         /* 1. Set the parameters */
+        let methodParameters = [
+            Constants.TMDBParameterKeys.ApiKey: Constants.TMDBParameterValues.ApiKey,
+            Constants.TMDBParameterKeys.SessionID: sessionID
+        ]
         /* 2/3. Build the URL, Configure the request */
+        let request = URLRequest(url: appDelegate.tmdbURLFromParameters(methodParameters as [String : AnyObject], withPathExtension: "/account"))
+        
+        
+        
         /* 4. Make the request */
+        let task = appDelegate.sharedSession.dataTask(with: request) { (data, response, error) in
+            
+            func displayError(_ error: String, debugLabelText: String? = nil) {
+                print(error)
+                performUIUpdatesOnMain {
+                    //self.setUIEnabled(true)
+                    self.debugTextLabel.text = "Login Failed (Login Step)."
+                }
+            }
+            guard (error == nil) else{
+                displayError("There Was an Error!")
+                return
+            }
+            guard let data = data else {
+                displayError("No Data Present")
+                return
+            }
         /* 5. Parse the data */
+            let parsedResult: [String: AnyObject]
+            do {
+                parsedResult = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String: AnyObject]
+            }catch {
+                displayError("Couldn't Parse JSON Data for User ID")
+                return
+            }
         /* 6. Use the data! */
+            self.appDelegate.userID = parsedResult[Constants.TMDBResponseKeys.ID] as! Int?
+            self.completeLogin()
+            
         /* 7. Start the request */
+    }
+        task.resume()
     }
 }
 
